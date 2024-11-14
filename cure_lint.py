@@ -2,11 +2,18 @@ import tkinter as tk
 from tkinter import filedialog
 
 # Import the whole module with an alias
-import cure_terminal as ct
+import cure_utility as cu
+
+cu.Option.set('duration_style', 'symbol')
+cu.Option.set('step_count', 2)
+
+cu.Print.title("Cure Python Lint Begin")
 
 # Set up a basic GUI to enable drag-and-drop file selection
 root = tk.Tk()
 root.withdraw()  # Hide the main window
+
+cu.Print.step("Select a Python file")
 
 # Open a file dialog to allow the user to select a Python script (.py or .pyw)
 file_path = filedialog.askopenfilename(
@@ -15,9 +22,16 @@ file_path = filedialog.askopenfilename(
 )
 
 if not file_path:
-    ct.Print.status("Error", "No file selected.")
+    cu.Print.status("Error", "No file selected.")
+
 else:
-    ct.Print.status("Info", f"Scanning file: `[[COLOR_OFF]]{file_path}[[COLOR_ON]]`...")
+    cu.Print.status("Info", f"Selected file: `[[COLOR_OFF]]{file_path}[[COLOR_ON]]`...\n")
+
+    cu.Print.step()
+
+    cu.Print.step("Scan file")
+
+    cu.Print.status("Info", f"Scanning file: `[[COLOR_OFF]]{file_path}[[COLOR_ON]]`...\n")
 
     def find_non_alternating_quotes(line):
         """
@@ -62,34 +76,58 @@ else:
 
         return quote_positions if quote_positions else None
 
+    def find_trailing_whitespace(line):
+        """
+        Identifies lines with trailing whitespace (spaces or tabs).
+        """
+        stripped_line = line.rstrip("\r\n")  # Remove only newline characters
+        return stripped_line.endswith(" ") or stripped_line.endswith("\t")
+
+    # Read all lines to get the file length for progress tracking
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        total_lines = len(lines)
+
+    # Initialize progress bar
+    cu.Progress.print_single(0, total_lines, custom_suffix=f"({{i}} of {{total}} lines)")
+
     # Analyze each line in the selected file
     lines_with_mismatched_quotes = []
-    with open(file_path, 'r') as file:
-        for line_num, line in enumerate(file, 1):
-            quote_positions = find_non_alternating_quotes(line)
-            if quote_positions:
-                # Capture the first column where a non-alternating quote appears
-                first_col = quote_positions[0] + 1  # Column number starts at 1
+    lines_with_trailing_whitespace = []
+    for line_num, line in enumerate(lines, 1):
+        # Update progress
+        cu.Progress.print_single(line_num, total_lines, custom_suffix=f"({{i}} of {{total}} lines)")
 
-                # Print the line with offending characters wrapped in color tags
-                highlighted_line = ""
-                for i, char in enumerate(line.rstrip()):
-                    if i in quote_positions:
-                        highlighted_line += f"[[COLOR_OFF]]{char}[[COLOR_ON]]"
-                    else:
-                        highlighted_line += char
+        quote_positions = find_non_alternating_quotes(line)
+        if quote_positions:
+            # Capture the first column where a non-alternating quote appears
+            first_col = quote_positions[0] + 1  # Column number starts at 1
 
-                lines_with_mismatched_quotes.append((line_num, highlighted_line, quote_positions, first_col))
+            # Print the line with offending characters wrapped in color tags
+            highlighted_line = ""
+            for i, char in enumerate(line.rstrip()):
+                if i in quote_positions:
+                    highlighted_line += f"[[COLOR_OFF]]{char}[[COLOR_ON]]"
+                else:
+                    highlighted_line += char
+
+            lines_with_mismatched_quotes.append((line_num, highlighted_line, quote_positions, first_col))
+
+        # Check for trailing whitespace
+        if find_trailing_whitespace(line):
+            lines_with_trailing_whitespace.append(line_num)
+
+    cu.Print.status('Info', "Results:\n")
 
     # Print results
     if lines_with_mismatched_quotes:
-        ct.Print.status("Error", "Lines containing non-alternating quotes inside formatted strings:")
+        cu.Print.status("Error", "Lines containing non-alternating quotes inside formatted strings:\n")
         for line_num, line, positions, first_col in lines_with_mismatched_quotes:
             # Print line and all column positions
-            ct.Print.status("Error", f"Line `[[COLOR_OFF]]{line_num}[[COLOR_ON]]`, Columns `[[COLOR_OFF]]{positions}[[COLOR_ON]]`:")
-            
+            cu.Print.status("Error", f"Line `[[COLOR_OFF]]{line_num}[[COLOR_ON]]`, Columns `[[COLOR_OFF]]{positions}[[COLOR_ON]]`:")
+
             # Print the line with exact indentation
-            ct.Print.color("red", f"`{line.rstrip()}`")
+            cu.Print.color("red", f"`{line.rstrip()}`")
 
             CARET_ADJUSTMENT = 2
 
@@ -100,4 +138,18 @@ else:
             caret_line = ''.join('^' if i in adjusted_positions else ' ' for i in range(1, len(line.rstrip()) + CARET_ADJUSTMENT))
             print(caret_line.rstrip())
     else:
-        ct.Print.status("Success", "No lines found with non-alternating quotes inside formatted strings.")
+        cu.Print.status("Success", "No lines found with non-alternating quotes inside formatted strings.")
+
+    print()
+
+    if lines_with_trailing_whitespace:
+        cu.Print.status("Warning", "Lines with trailing whitespace (spaces or tabs):\n")
+        for line_num in lines_with_trailing_whitespace:
+            cu.Print.color("yellow", f"Line `[[COLOR_OFF]]{line_num}[[COLOR_ON]]` has trailing whitespace.")
+    else:
+        cu.Print.status("Success", "No lines found with trailing whitespace.")
+
+print()
+cu.Print.step()
+
+cu.Print.title("Cure Python Lint End")
