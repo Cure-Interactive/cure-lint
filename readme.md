@@ -1,10 +1,10 @@
-# Cure Lint
+# Python Lint
 
 Small Python lint helper for finding quote conflicts inside f-string expressions.
 
 ## What It Checks
 
-`cure_lint.py` opens a file picker, scans the selected Python file, and reports f-string expressions that appear to reuse the same quote style as the outer f-string. Findings are printed with line numbers and caret markers.
+`python-lint.py` opens a file picker, scans the selected Python file, and reports f-string expressions that appear to reuse the same quote style as the outer f-string. Findings are printed with line numbers and caret markers.
 
 ## Requirements
 
@@ -16,13 +16,13 @@ This standalone repository vendors the small `cure_utility/` helper package used
 ## Run
 
 ```bash
-python cure_lint.py
+python python-lint.py
 ```
 
 Then select a Python file when the file dialog opens.
 
 ## Files
 
-- `cure_lint.py`: main scanner
-- `cure_lint_testfile.py`: small sample file for trying the scanner
+- `python-lint.py`: main scanner
+- `python-lint-testfile.py`: small sample file for trying the scanner
 - `cure_utility/`: vendored helper package

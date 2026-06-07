@@ -7,7 +7,7 @@ import cure_utility as cu
 cu.Option.set('duration_style', 'symbol')
 cu.Option.set('step_count', 2)
 
-cu.Print.title("Cure Python Lint Begin")
+cu.Print.title("Python Lint Begin")
 
 # Set up a basic GUI to enable drag-and-drop file selection
 root = tk.Tk()
@@ -152,4 +152,4 @@ else:
 print()
 cu.Print.step()
 
-cu.Print.title("Cure Python Lint End")
+cu.Print.title("Python Lint End")
